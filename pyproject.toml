@@ -14,8 +14,13 @@ dependencies = [
     "python-dotenv==1.1.1",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "httpx>=0.27.0",
+    "respx>=0.21.0",
     "black==25.1.0",
     "ruff==0.9.6",
     "mypy==1.15.0",
@@ -54,3 +59,29 @@ python_version = "3.13"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["backend/tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=backend",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=html",
+    "--asyncio-mode=auto",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+markers = [
+    "unit: marks tests as unit tests",
+    "integration: marks tests as integration tests",
+    "api: marks tests as API tests",
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]

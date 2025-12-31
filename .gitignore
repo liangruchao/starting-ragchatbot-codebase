@@ -26,6 +26,9 @@ uploads/
 *.swp
 *.swo
 
+# File history
+.history/
+
 # OS
 .DS_Store
 Thumbs.db

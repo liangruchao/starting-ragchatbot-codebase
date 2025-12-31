@@ -22,6 +22,48 @@
     --focus-ring: rgba(37, 99, 235, 0.2);
     --welcome-bg: #1e3a5f;
     --welcome-border: #2563eb;
+
+    /* Source link colors for dark mode */
+    --source-link-color: #60a5fa;
+    --source-link-bg: rgba(96, 165, 250, 0.15);
+    --source-link-border: rgba(96, 165, 250, 0.3);
+    --source-link-hover-bg: rgba(96, 165, 250, 0.25);
+}
+
+/* Light Mode Variables */
+:root[data-theme="light"] {
+    /* Primary colors - Blue with good contrast */
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+
+    /* Background colors - Light, clean backgrounds */
+    --background: #fafbfc;
+    --surface: #ffffff;
+    --surface-hover: #f3f4f6;
+
+    /* Text colors - Dark for excellent contrast on light backgrounds */
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+
+    /* Border and UI colors */
+    --border-color: #d1d5db;
+    --user-message: #2563eb;
+    --assistant-message: #f3f4f6;
+
+    /* Effects */
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --radius: 12px;
+    --focus-ring: rgba(37, 99, 235, 0.25);
+
+    /* Welcome message styling */
+    --welcome-bg: #eff6ff;
+    --welcome-border: #3b82f6;
+
+    /* Source link colors for light mode */
+    --source-link-color: #0369a1;
+    --source-link-bg: rgba(3, 105, 161, 0.08);
+    --source-link-border: rgba(3, 105, 161, 0.25);
+    --source-link-hover-bg: rgba(3, 105, 161, 0.15);
 }
 
 /* Base Styles */
@@ -34,6 +76,7 @@ body {
     overflow: hidden;
     margin: 0;
     padding: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Container - Full Screen */
@@ -46,9 +89,107 @@ body {
     padding: 0;
 }
 
-/* Header - Hidden */
+/* Header - Visible with Theme Toggle */
 header {
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 2rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border-color);
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.header-title {
+    flex: 1;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: var(--surface-hover);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.theme-toggle:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.theme-toggle:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.theme-toggle:active {
+    transform: scale(0.95);
+}
+
+/* Icon styles */
+.theme-toggle svg {
+    position: absolute;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-primary);
+}
+
+.theme-toggle .sun-icon {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+}
+
+.theme-toggle .moon-icon {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.5);
+}
+
+/* Light mode - show moon icon */
+:root[data-theme="light"] .theme-toggle .sun-icon {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.5);
+}
+
+:root[data-theme="light"] .theme-toggle .moon-icon {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+}
+
+/* Add smooth transitions for theme-dependent elements */
+.sidebar,
+.chat-main,
+.chat-container,
+.chat-messages,
+.chat-input-container,
+#chatInput,
+.message-content,
+.stat-item,
+.suggested-item,
+.course-titles,
+.new-chat-button {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 header h1 {
@@ -281,10 +422,10 @@ header h1 {
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
-    color: #60a5fa;
+    color: var(--source-link-color);
     text-decoration: none;
-    background: linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
-    border: 1px solid rgba(96, 165, 250, 0.3);
+    background: var(--source-link-bg);
+    border: 1px solid var(--source-link-border);
     border-radius: 6px;
     padding: 0.25rem 0.5rem;
     font-weight: 500;
@@ -292,9 +433,9 @@ header h1 {
 }
 
 .source-link:hover {
-    color: #93c5fd;
-    background: linear-gradient(135deg, rgba(96, 165, 250, 0.25) 0%, rgba(59, 130, 246, 0.2) 100%);
-    border-color: rgba(96, 165, 250, 0.5);
+    color: var(--source-link-color);
+    background: var(--source-link-hover-bg);
+    border-color: var(--source-link-border);
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
 }

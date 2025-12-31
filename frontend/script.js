@@ -30,18 +30,6 @@ function setupEventListeners() {
         if (e.key === 'Enter') sendMessage();
     });
 
-    // Theme toggle button
-    const themeToggle = document.getElementById('themeToggle');
-    themeToggle.addEventListener('click', toggleTheme);
-
-    // Keyboard accessibility for theme toggle
-    themeToggle.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleTheme();
-        }
-    });
-
     // New Chat button
     const newChatButton = document.getElementById('newChatButton');
     newChatButton.addEventListener('click', () => {
@@ -222,27 +210,181 @@ async function loadCourseStats() {
 }
 
 // Theme Functions
-function initializeTheme() {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+// Theme state
+let themeState = {
+    mode: 'system', // 'light', 'dark', 'system'
+    colorScheme: 'blue', // 'blue', 'green', 'purple', 'rose'
+    highContrast: false,
+    sepia: false
+};
 
-    if (savedTheme) {
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    } else if (prefersDark) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-        document.documentElement.setAttribute('data-theme', 'light');
+function initializeTheme() {
+    // Load saved theme state
+    const savedState = localStorage.getItem('themeState');
+    if (savedState) {
+        try {
+            themeState = { ...themeState, ...JSON.parse(savedState) };
+        } catch (e) {
+            console.error('Error parsing theme state:', e);
+        }
     }
+
+    applyTheme();
+    setupThemeListeners();
+    updateThemeUI();
+}
+
+function applyTheme() {
+    const root = document.documentElement;
+
+    // Apply theme mode
+    if (themeState.sepia) {
+        root.setAttribute('data-theme', 'sepia');
+    } else if (themeState.mode === 'system') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    } else {
+        root.setAttribute('data-theme', themeState.mode);
+    }
+
+    // Apply color scheme
+    root.setAttribute('data-color-scheme', themeState.colorScheme);
+
+    // Apply high contrast
+    root.setAttribute('data-high-contrast', themeState.highContrast.toString());
+
+    // Save to localStorage
+    localStorage.setItem('themeState', JSON.stringify(themeState));
 }
 
 function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    const dropdown = document.getElementById('themeDropdown');
+    const isHidden = dropdown.getAttribute('aria-hidden') === 'true';
+    dropdown.setAttribute('aria-hidden', !isHidden);
+}
 
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
+function setThemeMode(mode) {
+    themeState.mode = mode;
+    themeState.sepia = false; // Clear sepia when changing mode
+    applyTheme();
+    updateThemeUI();
+}
 
-    // Update aria-label for accessibility
+function setColorScheme(color) {
+    themeState.colorScheme = color;
+    applyTheme();
+    updateThemeUI();
+}
+
+function setHighContrast(enabled) {
+    themeState.highContrast = enabled;
+    applyTheme();
+    updateThemeUI();
+}
+
+function setSepia(enabled) {
+    themeState.sepia = enabled;
+    if (enabled) {
+        themeState.mode = 'light'; // Sepia is based on light mode
+    }
+    applyTheme();
+    updateThemeUI();
+}
+
+function updateThemeUI() {
+    // Update mode buttons
+    document.querySelectorAll('.theme-mode-btn').forEach(btn => {
+        const mode = btn.getAttribute('data-mode');
+        btn.classList.toggle('active', mode === themeState.mode);
+    });
+
+    // Update color scheme buttons
+    document.querySelectorAll('.color-scheme-btn').forEach(btn => {
+        const color = btn.getAttribute('data-color');
+        btn.classList.toggle('active', color === themeState.colorScheme);
+    });
+
+    // Update checkboxes
+    document.getElementById('highContrastToggle').checked = themeState.highContrast;
+    document.getElementById('sepiaToggle').checked = themeState.sepia;
+
+    // Disable color scheme and mode buttons when sepia is active
+    const sepiaActive = themeState.sepia;
+    document.querySelectorAll('.theme-mode-btn').forEach(btn => {
+        btn.style.opacity = sepiaActive ? '0.5' : '1';
+        btn.style.pointerEvents = sepiaActive ? 'none' : 'auto';
+    });
+    document.querySelectorAll('.color-scheme-btn').forEach(btn => {
+        btn.style.opacity = sepiaActive ? '0.5' : '1';
+        btn.style.pointerEvents = sepiaActive ? 'none' : 'auto';
+    });
+}
+
+function setupThemeListeners() {
+    // Theme toggle button - opens dropdown
     const themeToggle = document.getElementById('themeToggle');
-    themeToggle.setAttribute('aria-label', `Switch to ${currentTheme} mode`);
+    const dropdown = document.getElementById('themeDropdown');
+
+    console.log('Setting up theme listeners...', themeToggle, dropdown);
+
+    if (!themeToggle || !dropdown) {
+        console.error('Theme elements not found!', themeToggle, dropdown);
+        return;
+    }
+
+    themeToggle.addEventListener('click', (e) => {
+        console.log('Theme toggle clicked');
+        e.stopPropagation();
+        toggleTheme();
+    });
+
+    // Keyboard accessibility
+    themeToggle.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleTheme();
+        }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('themeDropdown');
+        const controls = document.querySelector('.theme-controls');
+        if (!controls.contains(e.target)) {
+            dropdown.setAttribute('aria-hidden', 'true');
+        }
+    });
+
+    // Theme mode buttons
+    document.querySelectorAll('.theme-mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const mode = btn.getAttribute('data-mode');
+            setThemeMode(mode);
+        });
+    });
+
+    // Color scheme buttons
+    document.querySelectorAll('.color-scheme-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const color = btn.getAttribute('data-color');
+            setColorScheme(color);
+        });
+    });
+
+    // High contrast toggle
+    document.getElementById('highContrastToggle').addEventListener('change', (e) => {
+        setHighContrast(e.target.checked);
+    });
+
+    // Sepia toggle
+    document.getElementById('sepiaToggle').addEventListener('change', (e) => {
+        setSepia(e.target.checked);
+    });
+
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (themeState.mode === 'system') {
+            applyTheme();
+        }
+    });
 }
